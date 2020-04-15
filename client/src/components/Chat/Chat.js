@@ -5,11 +5,13 @@ import Messages from "../Messages/Messages";
 import io from "socket.io-client";
 import "./chat.css";
 import Input from "../Input/Input";
+import TextContainer from "../TextContainer/TextContainer";
 
 let socket;
 const Chat = ({ location }) => {
   const [name, setName] = useState("");
   const [room, setRoom] = useState("");
+  const [users, setUsers] = useState([]);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   let ENDPOINT = "localhost:5000";
@@ -32,6 +34,9 @@ const Chat = ({ location }) => {
     socket.on("message", (message) => {
       setMessages([...messages, message]);
     });
+    socket.on("roomData", ({ users }) => {
+      setUsers(users);
+    });
   }, [messages]);
   const sendMessage = (e) => {
     e.preventDefault();
@@ -39,7 +44,7 @@ const Chat = ({ location }) => {
       socket.emit("sendMessage", message, () => setMessage(""));
     }
   };
-  console.log(message, messages);
+
   return (
     <div className="outerContainer">
       <div className="container">
@@ -51,6 +56,7 @@ const Chat = ({ location }) => {
           setMessage={setMessage}
         />
       </div>
+      <TextContainer users={users} />
     </div>
   );
 };

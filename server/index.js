@@ -6,6 +6,7 @@ const PORT = process.env.port || 5000;
 const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
+const cors = require("cors");
 const { addUser, removeUser, getUser, getUsersInRoom } = require("./users");
 
 io.on("connection", (socket) => {
@@ -17,8 +18,8 @@ io.on("connection", (socket) => {
       text: `${user.name}, welcome to the room`,
     });
     socket.broadcast
-      .to(user.name)
-      .emit("message", { user: "admin", text: `${user.name}, has joined` });
+      .to(user.room)
+      .emit("message", { user: "admin", text: `${user.name} has joined` });
     socket.join(user.room);
     io.to(user.room).emit("roomData", {
       room: user.room,
@@ -30,7 +31,7 @@ io.on("connection", (socket) => {
     const user = getUser(socket.id);
     io.to(user.room).emit("message", { user: user.name, text: message });
     io.to(user.room).emit("roomData", {
-      room: user.name,
+      room: user.room,
       user: getUsersInRoom(user.room),
     });
     callback();
@@ -44,5 +45,6 @@ io.on("connection", (socket) => {
 });
 
 app.use(router);
+app.use(cors);
 
 server.listen(PORT, () => console.log(`server has started on prot ${PORT}`));
